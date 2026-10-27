@@ -1,0 +1,989 @@
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TopGoal 3 - Lifestyles | تطبيق حفظ واختبار كلمات الوحدة الثانية</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Tajawal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#0284c7',
+                            purple: '#7c3aed',
+                            emerald: '#059669',
+                            amber: '#d97706',
+                            rose: '#e11d48',
+                            slate: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f1f5f9 100%);
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Perspective and 3D Flip Effects */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Glassmorphism Styling */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Confetti Overlay */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="flex flex-col justify-between text-slate-800">
+
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-cyan-600 via-sky-600 to-indigo-700 text-white shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-44 h-44 bg-white/10 rounded-full blur-2xl"></div>
+        <div class="absolute -left-10 -bottom-10 w-44 h-44 bg-amber-400/20 rounded-full blur-2xl"></div>
+
+        <div class="max-w-5xl mx-auto px-4 py-5 relative z-10">
+            <!-- App Meta & Sound Toggle -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-center sm:text-right">
+                    <div class="inline-flex items-center gap-2 bg-amber-400 text-slate-900 font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-wider mb-2 shadow-md">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <span>TopGoal 3 • سادس ابتدائي - الوحدة الثانية (Lifestyles)</span>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-black tracking-tight flex items-center justify-center sm:justify-start gap-2">
+                        <span>اختبار وحفظ الكلمات التفاعلي</span>
+                        <span class="text-2xl animate-float">🍎</span>
+                    </h1>
+                </div>
+
+                <!-- Sound FX Toggle Button -->
+                <button id="sound-toggle-btn" onclick="toggleSoundFX()" class="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-2xl text-xs font-bold backdrop-blur-md border border-white/30 transition active:scale-95 shadow-sm">
+                    <i id="sound-icon" class="fa-solid fa-volume-high text-amber-300 text-sm"></i>
+                    <span id="sound-text">الأصوات مفعّلة</span>
+                </button>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center justify-start gap-2 mt-6 overflow-x-auto pb-2 scrollbar-none">
+                <button onclick="switchTab('flashcards')" id="tab-flashcards" class="tab-btn bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 whitespace-nowrap transition-all hover:bg-white/30">
+                    <i class="fa-solid fa-clone text-amber-300"></i>
+                    <span>1. بطاقات الحفظ</span>
+                </button>
+
+                <button onclick="switchTab('practice')" id="tab-practice" class="tab-btn bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 whitespace-nowrap transition-all hover:bg-white/30">
+                    <i class="fa-solid fa-headphones text-emerald-300"></i>
+                    <span>2. اختبار التدريب (صوتي)</span>
+                </button>
+
+                <button onclick="switchTab('exam')" id="tab-exam" class="tab-btn active bg-white text-sky-900 font-black px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 whitespace-nowrap transition-all shadow-lg ring-2 ring-amber-400">
+                    <i class="fa-solid fa-file-signature text-rose-600"></i>
+                    <span>3. الاختبار النهائي (بدون صوت) 🔥</span>
+                </button>
+
+                <button onclick="switchTab('match')" id="tab-match" class="tab-btn bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 whitespace-nowrap transition-all hover:bg-white/30">
+                    <i class="fa-solid fa-puzzle-piece text-cyan-300"></i>
+                    <span>4. لعبة المطابقة</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-1">
+
+        <!-- ================= SECTION 1: FLASHCARDS ================= -->
+        <section id="sec-flashcards" class="tab-content hidden">
+            <div class="max-w-md mx-auto">
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <span class="text-xs font-bold text-slate-500">
+                        بطاقة رقم <span id="fc-current-idx" class="text-sky-600 font-black">1</span> من <span id="fc-total-count">23</span>
+                    </span>
+                    <button onclick="shuffleFlashcards()" class="text-xs font-bold text-sky-700 hover:text-sky-900 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-200 flex items-center gap-1.5 transition active:scale-95">
+                        <i class="fa-solid fa-shuffle"></i>
+                        <span>خلط البطاقات</span>
+                    </button>
+                </div>
+
+                <!-- Flip Card -->
+                <div id="fc-card" onclick="flipCurrentCard()" class="flip-card perspective-1000 h-80 cursor-pointer mb-6">
+                    <div class="flip-card-inner relative w-full h-full rounded-3xl shadow-xl border border-slate-200">
+                        
+                        <!-- Front (English) -->
+                        <div class="flip-card-front absolute inset-0 bg-white rounded-3xl p-6 flex flex-col items-center justify-between border-b-8 border-sky-600">
+                            <div class="w-full flex justify-between items-center text-xs text-slate-400 font-bold">
+                                <span class="bg-sky-50 text-sky-600 px-3 py-1 rounded-full">الإنجليزية</span>
+                                <span>انقر للقلب 🔄</span>
+                            </div>
+
+                            <div class="text-center my-auto">
+                                <div id="fc-icon" class="text-6xl mb-4 animate-float">🤕</div>
+                                <h2 id="fc-english" class="text-3xl sm:text-4xl font-black text-slate-900 tracking-wide">fell over</h2>
+                            </div>
+
+                            <button onclick="event.stopPropagation(); speakWord(vocabData[fcIndex].word)" class="px-5 py-2.5 bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white rounded-2xl font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow-sm border border-sky-100">
+                                <i class="fa-solid fa-volume-high text-base"></i>
+                                <span>استمع للنطق الإنجليزي</span>
+                            </button>
+                        </div>
+
+                        <!-- Back (Arabic) -->
+                        <div class="flip-card-back absolute inset-0 bg-gradient-to-br from-sky-600 to-indigo-800 text-white rounded-3xl p-6 flex flex-col items-center justify-between shadow-2xl">
+                            <div class="w-full flex justify-between items-center text-xs text-sky-200 font-bold">
+                                <span class="bg-white/10 px-3 py-1 rounded-full">الترجمة العربية</span>
+                                <span>انقر للعودة 🔄</span>
+                            </div>
+
+                            <div class="text-center my-auto">
+                                <div id="fc-icon-back" class="text-5xl mb-3">🤕</div>
+                                <h3 id="fc-arabic" class="text-3xl sm:text-4xl font-black text-amber-300">سقط</h3>
+                            </div>
+
+                            <div class="text-xs text-sky-200 font-medium">تذكر الكلمة قبل القلب دائماً ⭐</div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex items-center justify-between gap-3">
+                    <button onclick="prevFlashcard()" class="flex-1 py-3.5 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-2xl shadow-md border border-slate-200 text-xs sm:text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <span>السابقة</span>
+                    </button>
+                    
+                    <button onclick="speakWord(vocabData[fcIndex].word)" class="w-12 h-12 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl shadow-md flex items-center justify-center text-lg transition active:scale-95" title="نطق الكلمة">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+
+                    <button onclick="nextFlashcard()" class="flex-1 py-3.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl shadow-md text-xs sm:text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                        <span>التالية</span>
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: PRACTICE QUIZ (WITH AUDIO) ================= -->
+        <section id="sec-practice" class="tab-content hidden">
+            <div class="max-w-2xl mx-auto">
+                <!-- Stats Header -->
+                <div class="glass-card rounded-2xl p-4 mb-6 shadow-sm border-r-4 border-emerald-500 flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-slate-700 font-bold text-xs sm:text-sm">
+                        <i class="fa-solid fa-headphones text-emerald-600 text-base"></i>
+                        <span>اختبار التدريب الصوتي</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs sm:text-sm font-bold">
+                        <span class="text-sky-600">السؤال <span id="prac-current">1</span> / <span id="prac-total">23</span></span>
+                        <span class="text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">النقاط: <span id="prac-score">0</span></span>
+                    </div>
+                </div>
+
+                <!-- Quiz Container -->
+                <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-xl text-center relative border border-slate-200">
+                    <div id="prac-body">
+                        <!-- Dynamic Question -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 3: FINAL EXAM (STRICT NO-AUDIO MODE) ================= -->
+        <section id="sec-exam" class="tab-content block">
+            <div class="max-w-2xl mx-auto">
+                
+                <!-- Start Exam Card -->
+                <div id="exam-start-card" class="glass-card rounded-3xl p-6 sm:p-8 shadow-xl text-center border-t-8 border-rose-600 mb-6">
+                    <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">
+                        <i class="fa-solid fa-file-signature"></i>
+                    </div>
+                    
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 mb-2">الاختبار النهائي الصارم 🔥</h2>
+                    <p class="text-slate-600 text-xs sm:text-sm font-bold mb-6 max-w-lg mx-auto leading-relaxed">
+                        اختبار شامل لجميع كلمات الوحدة الثانية (Lifestyles) الـ 23 كاملة بدون نطق صوتي!
+                        اختبر قدرتك الفردية على قراءة الكلمات وتحديد معناها العربي الصحيح.
+                    </p>
+
+                    <!-- Student Name Input -->
+                    <div class="mb-6 max-w-md mx-auto text-right">
+                        <label for="student-name-input" class="block text-xs font-black text-slate-700 mb-2">
+                            <i class="fa-solid fa-user-graduate text-sky-600"></i> اسم الطالب / الطالبة (لإصدار الشهادة):
+                        </label>
+                        <input type="text" id="student-name-input" placeholder="اكتب اسمك الثلاثي هنا..." class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-sky-600 focus:outline-none text-sm font-bold text-slate-800 shadow-sm transition">
+                    </div>
+
+                    <!-- Exam Rules Badge -->
+                    <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 mb-6 text-rose-800 text-xs font-bold text-right flex items-start gap-3">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600 text-lg mt-0.5"></i>
+                        <div>
+                            <div class="font-black text-rose-900 mb-1">تعليمات الاختبار الصارم:</div>
+                            <ul class="list-disc list-inside space-y-1 text-slate-700 font-medium">
+                                <li><strong>بدون صوت:</strong> تم إيقاف نطق الكلمات لتأكيد الحفظ والقراءة.</li>
+                                <li>شامل لـ 23 كلمة محددة في الوحدة الثانية.</li>
+                                <li>تحصل في النهاية على شهادة إتقان قابلة للعرض والطباعة.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <button onclick="beginFinalExam()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-rose-600 via-sky-600 to-indigo-600 hover:opacity-95 text-white font-black rounded-2xl text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2 mx-auto">
+                        <span>بدء الاختبار النهائي الآن</span>
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </div>
+
+                <!-- Exam Active Container -->
+                <div id="exam-active-card" class="hidden">
+                    <div class="bg-slate-900 text-white rounded-2xl p-4 mb-4 shadow-md flex items-center justify-between text-xs sm:text-sm font-bold border-b-4 border-rose-500">
+                        <div class="flex items-center gap-2 text-rose-400">
+                            <i class="fa-solid fa-volume-xmark text-base"></i>
+                            <span>وضع الاختبار النهائي (بدون صوت)</span>
+                        </div>
+                        <div class="text-amber-400 font-mono text-sm">
+                            السؤال <span id="exam-current-num" class="font-black">1</span> من <span id="exam-total-num">23</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-6">
+                        <div id="exam-progress-bar" class="bg-gradient-to-r from-rose-500 to-sky-600 h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
+                    </div>
+
+                    <!-- Question Container -->
+                    <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-xl text-center border border-slate-200">
+                        <div id="exam-question-body">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= SECTION 4: MATCHING GAME ================= -->
+        <section id="sec-match" class="tab-content hidden">
+            <div class="max-w-3xl mx-auto">
+                <div class="glass-card rounded-2xl p-4 mb-6 shadow-sm flex items-center justify-between text-xs sm:text-sm font-bold border border-slate-200">
+                    <div class="flex items-center gap-2 text-sky-600">
+                        <i class="fa-solid fa-stopwatch text-sky-500"></i>
+                        <span>الوقت: <span id="match-timer">00:00</span></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-amber-600">
+                        <i class="fa-solid fa-hand text-amber-500"></i>
+                        <span>المحاولات: <span id="match-moves">0</span></span>
+                    </div>
+                    <button onclick="initMatchingGame()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl shadow-sm text-xs transition flex items-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>لعبة جديدة</span>
+                    </button>
+                </div>
+
+                <div id="match-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                    <!-- Dynamic Grid -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= DIPLOMA / CERTIFICATE MODAL ================= -->
+    <div id="exam-result-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden relative border-4 border-amber-400 my-8">
+            
+            <!-- Banner Header -->
+            <div class="bg-gradient-to-r from-sky-900 via-indigo-900 to-purple-900 text-white p-6 text-center relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-32 h-32 bg-amber-400/10 rounded-full blur-xl"></div>
+                
+                <div class="w-20 h-20 bg-amber-400 text-slate-900 rounded-full flex items-center justify-center mx-auto mb-3 text-4xl shadow-xl ring-4 ring-white/30">
+                    <i id="cert-icon" class="fa-solid fa-award"></i>
+                </div>
+                <div class="text-xs font-black tracking-widest text-amber-300 uppercase mb-1">شهادة تفوق وإتقان الكلمات</div>
+                <h2 id="cert-title" class="text-2xl font-black">TopGoal 3 - Lifestyles</h2>
+            </div>
+
+            <!-- Certificate Content -->
+            <div class="p-6 text-center">
+                <p class="text-xs font-bold text-slate-400 mb-1">يشهد معلم المادة بأن الطالب/ـة:</p>
+                <h3 id="cert-student-name" class="text-2xl font-black text-sky-950 mb-4 border-b border-slate-200 pb-2 inline-block px-6">اسم الطالب</h3>
+
+                <p id="cert-description" class="text-xs text-slate-600 font-bold mb-6">قد أتم الاختبار النهائي الصارم لترجمة وحفظ كلمات الوحدة الثانية بنجاح.</p>
+
+                <!-- Stars -->
+                <div id="cert-stars" class="flex justify-center gap-2 text-3xl text-amber-400 mb-6">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-6">
+                    <div class="text-center">
+                        <div class="text-slate-400 text-xs font-bold mb-1">الإجابات الصحيحة</div>
+                        <div id="cert-correct-score" class="text-emerald-600 font-black text-xl">0 / 23</div>
+                    </div>
+                    <div class="text-center border-r border-slate-200">
+                        <div class="text-slate-400 text-xs font-bold mb-1">النسبة المئوية</div>
+                        <div id="cert-percentage" class="text-sky-600 font-black text-xl">0%</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <button onclick="closeResultModal(); switchTab('flashcards');" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+                        مراجعة البطاقات 🗂️
+                    </button>
+                    <button onclick="closeResultModal(); switchTab('exam');" class="flex-1 py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow-md transition">
+                        إعادة الاختبار 🔄
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="bg-slate-100 px-6 py-3 text-center text-[10px] text-slate-400 font-bold border-t border-slate-200">
+                منهج الصف السادس الابتدائي • TopGoal 3
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-slate-400 text-xs font-medium py-4">
+        منهج TopGoal 3 • الوحدة الثانية (Lifestyles) - الصف السادس الابتدائي
+    </footer>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        /* ----------------------------------------------------
+           1. VOCABULARY DATASET (Exact 23 Words - Unit 2 Lifestyles)
+        ---------------------------------------------------- */
+        const vocabData = [
+            { id: 1, word: "fell over", arabic: "سقط", icon: "🤕" },
+            { id: 2, word: "knife", arabic: "سكين", icon: "🔪" },
+            { id: 3, word: "sore", arabic: "مؤلم", icon: "😫" },
+            { id: 4, word: "broken", arabic: "مكسور", icon: "🦴" },
+            { id: 5, word: "break", arabic: "يكسر", icon: "💥" },
+            { id: 6, word: "burned", arabic: "أحرق", icon: "🔥" },
+            { id: 7, word: "knee", arabic: "ركبة", icon: "🦵" },
+            { id: 8, word: "finger", arabic: "إصبع", icon: "👆" },
+            { id: 9, word: "elbow", arabic: "مرفق", icon: "💪" },
+            { id: 10, word: "toe", arabic: "إصبع القدم", icon: "🦶" },
+            { id: 11, word: "hand", arabic: "يد", icon: "✋" },
+            { id: 12, word: "pepper", arabic: "فلفل", icon: "🌶️" },
+            { id: 13, word: "salt", arabic: "ملح", icon: "🧂" },
+            { id: 14, word: "cereal", arabic: "حبوب الإفطار", icon: "🥣" },
+            { id: 15, word: "bread", arabic: "خبز", icon: "🍞" },
+            { id: 16, word: "pizza", arabic: "بيتزا", icon: "🍕" },
+            { id: 17, word: "spoon", arabic: "ملعقة", icon: "🥄" },
+            { id: 18, word: "jam", arabic: "مربى", icon: "🍓" },
+            { id: 19, word: "fork", arabic: "شوكة", icon: "🍴" },
+            { id: 20, word: "olives", arabic: "زيتون", icon: "🫒" },
+            { id: 21, word: "strawberries", arabic: "فراولة", icon: "🍓" },
+            { id: 22, word: "eggs", arabic: "بيض", icon: "🥚" },
+            { id: 23, word: "milk", arabic: "حليب", icon: "🥛" }
+        ];
+
+        /* ----------------------------------------------------
+           2. AUDIO & SYNTHESIS CONTROL
+        ---------------------------------------------------- */
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function toggleSoundFX() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            const text = document.getElementById('sound-text');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-amber-300 text-sm';
+                text.innerText = 'الأصوات مفعّلة';
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-slate-300 text-sm';
+                text.innerText = 'الأصوات مكتومة';
+            }
+        }
+
+        function playSynthTone(freq, type, duration) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type || 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        function playFX(type) {
+            if (!soundEnabled) return;
+            if (type === 'correct') {
+                playSynthTone(523.25, 'triangle', 0.1);
+                setTimeout(() => playSynthTone(659.25, 'triangle', 0.1), 80);
+                setTimeout(() => playSynthTone(783.99, 'triangle', 0.2), 160);
+            } else if (type === 'wrong') {
+                playSynthTone(220, 'sawtooth', 0.15);
+                setTimeout(() => playSynthTone(170, 'sawtooth', 0.25), 100);
+            } else if (type === 'click') {
+                playSynthTone(400, 'sine', 0.04);
+            } else if (type === 'win') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                    setTimeout(() => playSynthTone(f, 'triangle', 0.18), i * 100);
+                });
+            }
+        }
+
+        function speakWord(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'en-US';
+                msg.rate = 0.85;
+                msg.pitch = 1.0;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        /* ----------------------------------------------------
+           3. NAVIGATION CONTROLLER
+        ---------------------------------------------------- */
+        function switchTab(tabKey) {
+            playFX('click');
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 whitespace-nowrap transition-all hover:bg-white/30';
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabKey}`);
+            if (activeBtn) {
+                activeBtn.className = 'tab-btn active bg-white text-sky-900 font-black px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 whitespace-nowrap transition-all shadow-lg ring-2 ring-amber-400';
+            }
+
+            const targetSec = document.getElementById(`sec-${tabKey}`);
+            if (targetSec) targetSec.classList.remove('hidden');
+
+            if (tabKey === 'flashcards') renderFlashcard();
+            if (tabKey === 'practice') startPracticeQuiz();
+            if (tabKey === 'exam') resetExamView();
+            if (tabKey === 'match') initMatchingGame();
+        }
+
+        /* ----------------------------------------------------
+           4. FLASHCARDS LOGIC
+        ---------------------------------------------------- */
+        let fcIndex = 0;
+
+        function renderFlashcard() {
+            const cardEl = document.getElementById('fc-card');
+            cardEl.classList.remove('flipped');
+
+            const item = vocabData[fcIndex];
+            document.getElementById('fc-current-idx').innerText = fcIndex + 1;
+            document.getElementById('fc-total-count').innerText = vocabData.length;
+
+            document.getElementById('fc-icon').innerText = item.icon;
+            document.getElementById('fc-icon-back').innerText = item.icon;
+            document.getElementById('fc-english').innerText = item.word;
+            document.getElementById('fc-arabic').innerText = item.arabic;
+
+            speakWord(item.word);
+        }
+
+        function flipCurrentCard() {
+            playFX('click');
+            document.getElementById('fc-card').classList.toggle('flipped');
+        }
+
+        function nextFlashcard() {
+            playFX('click');
+            fcIndex = (fcIndex + 1) % vocabData.length;
+            renderFlashcard();
+        }
+
+        function prevFlashcard() {
+            playFX('click');
+            fcIndex = (fcIndex - 1 + vocabData.length) % vocabData.length;
+            renderFlashcard();
+        }
+
+        function shuffleFlashcards() {
+            playFX('click');
+            vocabData.sort(() => Math.random() - 0.5);
+            fcIndex = 0;
+            renderFlashcard();
+        }
+
+        /* ----------------------------------------------------
+           5. PRACTICE QUIZ (WITH AUDIO)
+        ---------------------------------------------------- */
+        let pracIndex = 0;
+        let pracScore = 0;
+        let pracQuestions = [];
+
+        function startPracticeQuiz() {
+            pracQuestions = [...vocabData].sort(() => Math.random() - 0.5);
+            pracIndex = 0;
+            pracScore = 0;
+            document.getElementById('prac-score').innerText = '0';
+            document.getElementById('prac-total').innerText = pracQuestions.length;
+            renderPracticeQuestion();
+        }
+
+        function renderPracticeQuestion() {
+            if (pracIndex >= pracQuestions.length) {
+                showFinalDiploma(pracScore / 10, pracQuestions.length, "اختبار التدريب الصوتي");
+                return;
+            }
+
+            const q = pracQuestions[pracIndex];
+            document.getElementById('prac-current').innerText = pracIndex + 1;
+
+            speakWord(q.word);
+
+            const distractors = vocabData.filter(v => v.id !== q.id).sort(() => Math.random() - 0.5).slice(0, 3);
+            const choices = [q, ...distractors].sort(() => Math.random() - 0.5);
+
+            const body = document.getElementById('prac-body');
+            body.innerHTML = `
+                <div class="text-6xl mb-3 animate-float">${q.icon}</div>
+
+                <div onclick="speakWord('${q.word}')" class="inline-flex items-center gap-3 bg-sky-50 border border-sky-200 hover:bg-sky-100/80 px-6 py-3 rounded-2xl mb-6 cursor-pointer transition active:scale-95 group shadow-sm">
+                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-wide">${q.word}</h2>
+                    <span class="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition">
+                        <i class="fa-solid fa-volume-high text-base"></i>
+                    </span>
+                </div>
+
+                <p class="text-xs sm:text-sm text-slate-500 font-bold mb-6">اختر الترجمة العربية الصحيحة للكلمة أعلاه:</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="prac-options">
+                    ${choices.map((opt, idx) => `
+                        <button onclick="handlePracticeAnswer(this, ${opt.id === q.id}, '${q.arabic}')" class="prac-opt-btn w-full p-4 rounded-2xl border-2 border-slate-200 bg-white hover:border-sky-500 hover:bg-sky-50/50 text-slate-800 font-black text-base sm:text-lg transition flex items-center justify-between shadow-sm">
+                            <span>${opt.arabic}</span>
+                            <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center border border-slate-200">${['أ', 'ب', 'ج', 'د'][idx]}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function handlePracticeAnswer(btnEl, isCorrect, correctText) {
+            const btns = document.querySelectorAll('.prac-opt-btn');
+            btns.forEach(b => b.onclick = null);
+
+            if (isCorrect) {
+                btnEl.classList.remove('border-slate-200', 'bg-white');
+                btnEl.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+                btnEl.querySelector('span:last-child').innerHTML = '<i class="fa-solid fa-check text-emerald-600"></i>';
+                playFX('correct');
+                pracScore += 10;
+                document.getElementById('prac-score').innerText = pracScore;
+            } else {
+                btnEl.classList.remove('border-slate-200', 'bg-white');
+                btnEl.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-900');
+                btnEl.querySelector('span:last-child').innerHTML = '<i class="fa-solid fa-xmark text-rose-600"></i>';
+                playFX('wrong');
+
+                btns.forEach(b => {
+                    if (b.innerText.includes(correctText)) {
+                        b.classList.remove('border-slate-200', 'bg-white');
+                        b.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+                    }
+                });
+            }
+
+            setTimeout(() => {
+                pracIndex++;
+                renderPracticeQuestion();
+            }, 1200);
+        }
+
+        /* ----------------------------------------------------
+           6. FINAL EXAM (STRICT NO-AUDIO MODE)
+        ---------------------------------------------------- */
+        let examIndex = 0;
+        let examCorrectCount = 0;
+        let examQuestions = [];
+
+        function resetExamView() {
+            document.getElementById('exam-start-card').classList.remove('hidden');
+            document.getElementById('exam-active-card').classList.add('hidden');
+        }
+
+        function beginFinalExam() {
+            const studentInput = document.getElementById('student-name-input').value.trim();
+            if (!studentInput) {
+                document.getElementById('student-name-input').focus();
+                document.getElementById('student-name-input').classList.add('border-rose-500', 'animate-bounce');
+                setTimeout(() => document.getElementById('student-name-input').classList.remove('animate-bounce'), 1000);
+                return;
+            }
+
+            examQuestions = [...vocabData].sort(() => Math.random() - 0.5);
+            examIndex = 0;
+            examCorrectCount = 0;
+
+            document.getElementById('exam-start-card').classList.add('hidden');
+            document.getElementById('exam-active-card').classList.remove('hidden');
+
+            document.getElementById('exam-total-num').innerText = examQuestions.length;
+            renderExamQuestion();
+        }
+
+        function renderExamQuestion() {
+            if (examIndex >= examQuestions.length) {
+                showFinalDiploma(examCorrectCount, examQuestions.length, "الاختبار النهائي الصارم");
+                return;
+            }
+
+            const q = examQuestions[examIndex];
+            document.getElementById('exam-current-num').innerText = examIndex + 1;
+
+            const pct = (examIndex / examQuestions.length) * 100;
+            document.getElementById('exam-progress-bar').style.width = `${pct}%`;
+
+            const distractors = vocabData.filter(v => v.id !== q.id).sort(() => Math.random() - 0.5).slice(0, 3);
+            const choices = [q, ...distractors].sort(() => Math.random() - 0.5);
+
+            const qBody = document.getElementById('exam-question-body');
+            qBody.innerHTML = `
+                <!-- STRICT READING MODE - NO AUDIO BUTTON -->
+                <div class="inline-block bg-slate-900 text-white px-8 py-5 rounded-3xl mb-6 shadow-lg border-b-4 border-rose-500">
+                    <span class="text-xs font-bold text-rose-400 block mb-1">اقرأ الكلمة الإنجليزية بتركيز:</span>
+                    <h2 class="text-4xl sm:text-5xl font-black tracking-wider font-mono">${q.word}</h2>
+                </div>
+
+                <p class="text-xs sm:text-sm text-slate-600 font-bold mb-6">ما هي الترجمة العربية الصحيحة للكلمة أعلاه؟</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="exam-options">
+                    ${choices.map((opt, idx) => `
+                        <button onclick="handleExamAnswer(this, ${opt.id === q.id}, '${q.arabic}')" class="exam-opt-btn w-full p-4 rounded-2xl border-2 border-slate-200 bg-white hover:border-rose-500 hover:bg-rose-50/40 text-slate-800 font-black text-base sm:text-lg transition flex items-center justify-between shadow-sm">
+                            <span>${opt.arabic}</span>
+                            <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center border border-slate-200">${['أ', 'ب', 'ج', 'د'][idx]}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function handleExamAnswer(btnEl, isCorrect, correctText) {
+            const btns = document.querySelectorAll('.exam-opt-btn');
+            btns.forEach(b => b.onclick = null);
+
+            if (isCorrect) {
+                btnEl.classList.remove('border-slate-200', 'bg-white');
+                btnEl.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+                btnEl.querySelector('span:last-child').innerHTML = '<i class="fa-solid fa-check text-emerald-600"></i>';
+                playFX('correct');
+                examCorrectCount++;
+            } else {
+                btnEl.classList.remove('border-slate-200', 'bg-white');
+                btnEl.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-900');
+                btnEl.querySelector('span:last-child').innerHTML = '<i class="fa-solid fa-xmark text-rose-600"></i>';
+                playFX('wrong');
+
+                btns.forEach(b => {
+                    if (b.innerText.includes(correctText)) {
+                        b.classList.remove('border-slate-200', 'bg-white');
+                        b.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+                    }
+                });
+            }
+
+            setTimeout(() => {
+                examIndex++;
+                renderExamQuestion();
+            }, 1000);
+        }
+
+        /* ----------------------------------------------------
+           7. CERTIFICATE DIPLOMA MODAL
+        ---------------------------------------------------- */
+        function showFinalDiploma(correct, total, examTypeTitle) {
+            const modal = document.getElementById('exam-result-modal');
+            const studentName = document.getElementById('student-name-input').value.trim() || "طالب بطل";
+            const pct = Math.round((correct / total) * 100);
+
+            document.getElementById('cert-student-name').innerText = studentName;
+            document.getElementById('cert-correct-score').innerText = `${correct} / ${total}`;
+            document.getElementById('cert-percentage').innerText = `${pct}%`;
+
+            const stars = document.getElementById('cert-stars');
+            if (pct >= 85) {
+                stars.innerHTML = '<i class="fa-solid fa-star text-amber-400"></i><i class="fa-solid fa-star text-amber-400"></i><i class="fa-solid fa-star text-amber-400"></i>';
+                document.getElementById('cert-description').innerText = `أداء أسطوري ورائع في ${examTypeTitle}! تم حفظ جميع الكلمات بنجاح.`;
+                playFX('win');
+                triggerConfetti();
+            } else if (pct >= 60) {
+                stars.innerHTML = '<i class="fa-solid fa-star text-amber-400"></i><i class="fa-solid fa-star text-amber-400"></i><i class="fa-regular fa-star text-slate-300"></i>';
+                document.getElementById('cert-description').innerText = `أداء ممتاز في ${examTypeTitle}! يمكنك الإعادة للحصول على النسبة الكاملة.`;
+                playFX('correct');
+            } else {
+                stars.innerHTML = '<i class="fa-solid fa-star text-amber-400"></i><i class="fa-regular fa-star text-slate-300"></i><i class="fa-regular fa-star text-slate-300"></i>';
+                document.getElementById('cert-description').innerText = `محاولة جيدة، يمكنك مراجعة بطاقات الحفظ ثم إعادة الاختبار للتميز.`;
+                playFX('wrong');
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeResultModal() {
+            document.getElementById('exam-result-modal').classList.add('hidden');
+        }
+
+        /* ----------------------------------------------------
+           8. MATCHING GAME LOGIC
+        ---------------------------------------------------- */
+        let matchCards = [];
+        let flippedMatchCards = [];
+        let matchedPairs = 0;
+        let matchMoves = 0;
+        let matchSeconds = 0;
+        let matchTimerInterval = null;
+
+        function initMatchingGame() {
+            const selected = [...vocabData].sort(() => Math.random() - 0.5).slice(0, 6);
+            
+            matchCards = [];
+            selected.forEach(item => {
+                matchCards.push({ id: item.id, text: item.word, type: 'en', icon: item.icon });
+                matchCards.push({ id: item.id, text: item.arabic, type: 'ar', icon: item.icon });
+            });
+
+            matchCards.sort(() => Math.random() - 0.5);
+
+            flippedMatchCards = [];
+            matchedPairs = 0;
+            matchMoves = 0;
+            matchSeconds = 0;
+
+            document.getElementById('match-moves').innerText = '0';
+            document.getElementById('match-timer').innerText = '00:00';
+
+            clearInterval(matchTimerInterval);
+            matchTimerInterval = setInterval(() => {
+                matchSeconds++;
+                const mins = String(Math.floor(matchSeconds / 60)).padStart(2, '0');
+                const secs = String(matchSeconds % 60).padStart(2, '0');
+                document.getElementById('match-timer').innerText = `${mins}:${secs}`;
+            }, 1000);
+
+            renderMatchGrid();
+        }
+
+        function renderMatchGrid() {
+            const grid = document.getElementById('match-grid');
+            grid.innerHTML = '';
+
+            matchCards.forEach((card, idx) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'match-card h-28 cursor-pointer perspective-1000';
+                cardEl.innerHTML = `
+                    <div class="flip-card-inner relative w-full h-full rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flip-card-front absolute inset-0 bg-gradient-to-br from-sky-600 to-indigo-700 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
+                            <i class="fa-solid fa-puzzle-piece opacity-50"></i>
+                        </div>
+                        <div class="flip-card-back absolute inset-0 bg-white rounded-2xl p-2 flex flex-col items-center justify-center text-center border-2 border-sky-500">
+                            <span class="text-xl mb-1">${card.icon}</span>
+                            <span class="font-black text-slate-800 text-xs sm:text-sm">${card.text}</span>
+                        </div>
+                    </div>
+                `;
+                cardEl.onclick = () => flipMatchCard(cardEl, idx);
+                grid.appendChild(cardEl);
+            });
+        }
+
+        function flipMatchCard(cardEl, index) {
+            if (flippedMatchCards.length >= 2) return;
+            if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
+
+            playFX('click');
+            cardEl.classList.add('flipped');
+            flippedMatchCards.push({ element: cardEl, index: index, data: matchCards[index] });
+
+            if (flippedMatchCards.length === 2) {
+                matchMoves++;
+                document.getElementById('match-moves').innerText = matchMoves;
+                checkMatchPair();
+            }
+        }
+
+        function checkMatchPair() {
+            const [c1, c2] = flippedMatchCards;
+
+            if (c1.data.id === c2.data.id && c1.data.type !== c2.data.type) {
+                playFX('correct');
+                if (c1.data.type === 'en') speakWord(c1.data.text);
+                if (c2.data.type === 'en') speakWord(c2.data.text);
+
+                c1.element.classList.add('matched');
+                c2.element.classList.add('matched');
+
+                c1.element.querySelector('.flip-card-back').classList.replace('border-sky-500', 'border-emerald-500');
+                c1.element.querySelector('.flip-card-back').classList.add('bg-emerald-50');
+                c2.element.querySelector('.flip-card-back').classList.replace('border-sky-500', 'border-emerald-500');
+                c2.element.querySelector('.flip-card-back').classList.add('bg-emerald-50');
+
+                flippedMatchCards = [];
+                matchedPairs++;
+
+                if (matchedPairs === 6) {
+                    clearInterval(matchTimerInterval);
+                    setTimeout(() => {
+                        playFX('win');
+                        triggerConfetti();
+                        showFinalDiploma(6, 6, "لعبة المطابقة والذاكرة");
+                    }, 500);
+                }
+            } else {
+                playFX('wrong');
+                setTimeout(() => {
+                    c1.element.classList.remove('flipped');
+                    c2.element.classList.remove('flipped');
+                    flippedMatchCards = [];
+                }, 1000);
+            }
+        }
+
+        /* ----------------------------------------------------
+           9. CONFETTI ANIMATION
+        ---------------------------------------------------- */
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const pieces = [];
+            const colors = ['#f59e0b', '#10b981', '#0284c7', '#ec4899', '#6366f1'];
+
+            for (let i = 0; i < 110; i++) {
+                pieces.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 2 - 1,
+                    rotation: Math.random() * 360,
+                    rotSpeed: Math.random() * 10 - 5
+                });
+            }
+
+            let animId;
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let alive = false;
+                pieces.forEach(p => {
+                    p.y += p.speedY;
+                    p.x += p.speedX;
+                    p.rotation += p.rotSpeed;
+
+                    if (p.y < canvas.height) alive = true;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                });
+
+                if (alive) {
+                    animId = requestAnimationFrame(update);
+                } else {
+                    cancelAnimationFrame(animId);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+            update();
+        }
+
+        /* ----------------------------------------------------
+           10. INITIALIZATION
+        ---------------------------------------------------- */
+        window.onload = function() {
+            switchTab('exam');
+        };
+    </script>
+</body>
+</html>
